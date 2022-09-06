@@ -63,6 +63,11 @@ func (m Module) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
   var cmd tea.Cmd
 
+  viewportStyle.Width(80)
+  viewportStyle.Height(20)
+  m.viewport = viewport.New(80 - 4, 20 - 4)
+  m.viewport.Width =  80 - 4
+  m.viewport.Height = 20 - 4
   m.viewport.SetContent("Hello World!")
   m.viewport, cmd = m.viewport.Update(msg)
 

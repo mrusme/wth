@@ -1,96 +1,22 @@
 package tui
 
 import (
-	// "fmt"
-	"strings"
+	"errors"
+	"fmt"
 
+	"github.com/76creates/stickers"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	lib "github.com/mrusme/libwth"
 )
 
 type KeyMap struct {
-    FirstTab      key.Binding
-    SecondTab     key.Binding
-    ThirdTab      key.Binding
-    FourthTab     key.Binding
-    FifthTab      key.Binding
-    SixthTab      key.Binding
-    SeventhTab    key.Binding
-    EightTab      key.Binding
-    NinthTab      key.Binding
-    TenthTab      key.Binding
-    EleventhTab   key.Binding
-    TwelfthTab    key.Binding
-    ThirteenthTab key.Binding
-    PrevTab       key.Binding
-    NextTab       key.Binding
     Up            key.Binding
     Down          key.Binding
     Quit          key.Binding
 }
 
 var DefaultKeyMap = KeyMap{
-  FirstTab: key.NewBinding(
-    key.WithKeys("f1"),
-    key.WithHelp("f1", "first tab"),
-  ),
-  SecondTab: key.NewBinding(
-    key.WithKeys("f2"),
-    key.WithHelp("f2", "second tab"),
-  ),
-  ThirdTab: key.NewBinding(
-    key.WithKeys("f3"),
-    key.WithHelp("f3", "third tab"),
-  ),
-  FourthTab: key.NewBinding(
-    key.WithKeys("f4"),
-    key.WithHelp("f4", "fourth tab"),
-  ),
-  FifthTab: key.NewBinding(
-    key.WithKeys("f5"),
-    key.WithHelp("f5", "fifth tab"),
-  ),
-  SixthTab: key.NewBinding(
-    key.WithKeys("f6"),
-    key.WithHelp("f6", "sixth tab"),
-  ),
-  SeventhTab: key.NewBinding(
-    key.WithKeys("f7"),
-    key.WithHelp("f7", "seventh tab"),
-  ),
-  EightTab: key.NewBinding(
-    key.WithKeys("f8"),
-    key.WithHelp("f8", "eight tab"),
-  ),
-  NinthTab: key.NewBinding(
-    key.WithKeys("f9"),
-    key.WithHelp("f9", "ninth tab"),
-  ),
-  TenthTab: key.NewBinding(
-    key.WithKeys("f10"),
-    key.WithHelp("f10", "tenth tab"),
-  ),
-  EleventhTab: key.NewBinding(
-    key.WithKeys("f11"),
-    key.WithHelp("f11", "eleventh tab"),
-  ),
-  TwelfthTab: key.NewBinding(
-    key.WithKeys("f12"),
-    key.WithHelp("f12", "twelfth tab"),
-  ),
-  ThirteenthTab: key.NewBinding(
-    key.WithKeys("f13"),
-    key.WithHelp("f13", "thirteenth tab"),
-  ),
-  PrevTab: key.NewBinding(
-    key.WithKeys("ctrl+p"),
-    key.WithHelp("ctrl+p", "previous tab"),
-  ),
-  NextTab: key.NewBinding(
-    key.WithKeys("ctrl+n"),
-    key.WithHelp("ctrl+n", "next tab"),
-  ),
   Up: key.NewBinding(
     key.WithKeys("k", "up"),
     key.WithHelp("↑/k", "move up"),
@@ -110,6 +36,7 @@ type Model struct {
   keymap        KeyMap
   config        *lib.Cfg
   modules       *[]*lib.Module
+  flexbox       *stickers.FlexBox
   screen        []int
   currentFocus  int
 }
@@ -119,9 +46,27 @@ func New(config *lib.Cfg, modules *[]*lib.Module) Model {
     keymap:        DefaultKeyMap,
     config:        config,
     modules:       modules,
+    flexbox:       stickers.NewFlexBox(0, 0),
     screen:        []int{0, 0},
     currentFocus:  -1,
   }
+
+  var flexRows []*stickers.FlexBoxRow
+
+  for _, row := range m.config.Layout.Rows {
+    flexRow := new(stickers.FlexBoxRow)
+    var flexCells []*stickers.FlexBoxCell
+
+    for _, cell := range row.Cells {
+      flexCell := stickers.
+        NewFlexBoxCell(cell.RatioX, cell.RatioY)
+
+      flexCells = append(flexCells, flexCell)
+    }
+    flexRow.AddCells(flexCells)
+    flexRows = append(flexRows, flexRow)
+  }
+  m.flexbox.AddRows(flexRows)
 
   return m
 }
@@ -159,16 +104,46 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() (string) {
-  s := strings.Builder{}
+	m.flexbox.ForceRecalculate()
 
-  for i := 0; i < len(*m.modules); i++ {
-    s.WriteString((*(*m.modules)[i]).View())
+  for rowIdx, row := range m.config.Layout.Rows {
+    for cellIdx, cell := range row.Cells {
+      var content string
+
+      if cell.ModuleID == "-" {
+        content = ""
+      } else {
+        for i := 0; i < len(*m.modules); i++ {
+          if m.config.Modules[i].ID == cell.ModuleID {
+            content = (*(*m.modules)[i]).View()
+          }
+        }
+      }
+
+      flexRow := m.flexbox.Row(rowIdx)
+      if flexRow == nil {
+        panic(errors.New(
+          fmt.Sprintf("flex row %d could not be found", rowIdx),
+        ))
+      }
+      flexCell := flexRow.Cell(cellIdx)
+      if flexCell == nil {
+        panic(errors.New(
+          fmt.Sprintf("flex cell %d could not be found", cellIdx),
+        ))
+      }
+
+      flexCell.SetContent(content)
+    }
   }
-  return s.String()
+
+  return m.flexbox.Render()
 }
 
 func (m Model) setSizes(winWidth int, winHeight int) {
   m.screen[0] = winWidth
   m.screen[1] = winHeight
+  m.flexbox.SetWidth(winWidth)
+  m.flexbox.SetHeight(winHeight)
 }
 

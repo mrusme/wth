@@ -1,5 +1,6 @@
 modules:
-  - name: "Example"
+  - id: "example01"
+    name: "Example"
     path: "./modules/example/example.so"
     enabled: true
     config:
@@ -10,6 +11,23 @@ modules:
       height: 1
       width: 2
     refreshInterval: "10s"
+
+layout:
+  rows:
+    # First row
+    - cells:
+      # First cell (from left to right)
+      - moduleId: "-"
+        ratioX: 4
+        ratioY: 3
+      # Second cell
+      - moduleId: "example01"
+        ratioX: 4
+        ratioY: 3
+      # Third cell
+      - moduleId: "-"
+        ratioX: 4
+        ratioY: 3
 
 theme:
   moduleBorderColor: "#f0f0f0"
