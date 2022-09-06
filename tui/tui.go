@@ -6,7 +6,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/mrusme/wth/lib"
+	lib "github.com/mrusme/libwth"
 )
 
 type KeyMap struct {
@@ -149,16 +149,21 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     }
   }
 
-  v, cmd := (*(*m.modules)[m.currentFocus]).Update(msg)
-  (*(*m.modules)[m.currentFocus]) = v
-  cmds = append(cmds, cmd)
+  for i := 0; i < len(*m.modules); i++ {
+    v, cmd := (*(*m.modules)[i]).Update(msg)
+    (*(*m.modules)[i]) = v
+    cmds = append(cmds, cmd)
+  }
 
   return m, tea.Batch(cmds...)
 }
 
 func (m Model) View() (string) {
   s := strings.Builder{}
-  s.WriteString((*(*m.modules)[m.currentFocus]).View())
+
+  for i := 0; i < len(*m.modules); i++ {
+    s.WriteString((*(*m.modules)[i]).View())
+  }
   return s.String()
 }
 

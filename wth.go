@@ -3,7 +3,7 @@ package main
 import (
   "plugin"
 
-  "github.com/mrusme/wth/lib"
+	lib "github.com/mrusme/libwth"
   "github.com/mrusme/wth/tui"
   tea "github.com/charmbracelet/bubbletea"
 )
@@ -38,17 +38,11 @@ func main() {
       panic(err)
     }
 
-    var newModule lib.NewModule
-    newModule, ok := symNewModule.(lib.NewModule)
-    if !ok {
-      panic("issue with module symbol, contact the module developer")
-    }
-
-    module, err := newModule(ctx)
+    module, err := symNewModule.(func(*lib.Ctx) (lib.Module, error))(ctx)
     if err != nil {
       panic(err)
     }
-    rt.Modules = append(rt.Modules, module)
+    rt.Modules = append(rt.Modules, &module)
   }
 
   tui := tea.NewProgram(tui.New(&rt.Config, &rt.Modules), tea.WithAltScreen())
