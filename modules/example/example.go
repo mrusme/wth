@@ -1,7 +1,7 @@
 package main
 
 import (
-  "github.com/mrusme/wth/lib"
+  lib "github.com/mrusme/libwth"
 
   "github.com/charmbracelet/bubbles/key"
   "github.com/charmbracelet/bubbles/viewport"
@@ -39,7 +39,7 @@ type Module struct {
   viewport        viewport.Model
 }
 
-func NewModule(ctx *lib.Ctx) (*Module, error) {
+func NewModule(ctx *lib.Ctx) (lib.Module, error) {
   module := new(Module)
   module.ctx = ctx
 
