@@ -1,0 +1,16 @@
+modules:
+  - name: "Example"
+    path: "./modules/example/example.so"
+    enabled: true
+    config:
+      output: "Hello World"
+    position:
+      top: 0
+      left: 0
+      height: 1
+      width: 2
+    refreshInterval: "10s"
+
+theme:
+  moduleBorderColor: "#f0f0f0"
+
