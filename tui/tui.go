@@ -88,7 +88,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
   case tea.WindowSizeMsg:
     m.setSizes(msg.Width, msg.Height)
     for i := range *m.modules {
-      v, cmd := (*(*m.modules)[i]).Update(msg)
+      cell := m.getCellByModuleID(m.config.Modules[i].ID)
+      _msg := lib.ModuleResizeEvent{
+        Width: cell.GetWidth(),
+        Height: cell.GetHeight(),
+      }
+      v, cmd := (*(*m.modules)[i]).Update(_msg)
       (*(*m.modules)[i]) = v
       cmds = append(cmds, cmd)
     }
@@ -140,10 +145,32 @@ func (m Model) View() (string) {
   return m.flexbox.Render()
 }
 
+func (m Model) getCellByModuleID(moduleID string) (*stickers.FlexBoxCell) {
+  for rowIdx, row := range m.config.Layout.Rows {
+    for cellIdx, cell := range row.Cells {
+      if cell.ModuleID == moduleID {
+        flexRow := m.flexbox.Row(rowIdx)
+        if flexRow == nil {
+          return nil
+        }
+        flexCell := flexRow.Cell(cellIdx)
+        if flexCell == nil {
+          return nil
+        }
+
+        return flexCell
+      }
+    }
+  }
+
+  return nil
+}
+
 func (m Model) setSizes(winWidth int, winHeight int) {
   m.screen[0] = winWidth
   m.screen[1] = winHeight
   m.flexbox.SetWidth(winWidth)
   m.flexbox.SetHeight(winHeight)
+  m.flexbox.ForceRecalculate()
 }
 

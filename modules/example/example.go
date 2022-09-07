@@ -59,15 +59,18 @@ func (m Module) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     case key.Matches(msg, m.keymap.Refresh):
       cmds = append(cmds, m.refresh())
     }
+
+  case lib.ModuleResizeEvent:
+    viewportStyle.Width(msg.Width - 4)
+    viewportStyle.Height(msg.Height - 4)
+    m.viewport = viewport.New(msg.Width - 4, msg.Height - 4)
+    m.viewport.Width =  msg.Width - 4
+    m.viewport.Height = msg.Height - 4
+
   }
 
   var cmd tea.Cmd
 
-  viewportStyle.Width(80)
-  viewportStyle.Height(20)
-  m.viewport = viewport.New(80 - 4, 20 - 4)
-  m.viewport.Width =  80 - 4
-  m.viewport.Height = 20 - 4
   m.viewport.SetContent("Hello World!")
   m.viewport, cmd = m.viewport.Update(msg)
 
