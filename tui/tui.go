@@ -3,12 +3,13 @@ package tui
 import (
 	"errors"
 	"fmt"
-  "time"
+	"time"
 
 	"github.com/76creates/stickers"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	lib "github.com/mrusme/libwth"
+	"go.uber.org/zap"
 )
 
 type KeyMap struct {
@@ -42,9 +43,10 @@ type Model struct {
   screen        []int
   currentFocus  int
   pingChan      chan struct{}
+  log           *zap.SugaredLogger
 }
 
-func New(config *lib.Cfg, modules *[]*lib.Module) Model {
+func New(config *lib.Cfg, modules *[]*lib.Module, log *zap.SugaredLogger) Model {
   m := Model{
     keymap:        DefaultKeyMap,
     config:        config,
@@ -53,6 +55,7 @@ func New(config *lib.Cfg, modules *[]*lib.Module) Model {
     screen:        []int{0, 0},
     currentFocus:  -1,
     pingChan:      make(chan struct{}),
+    log:           log,
   }
 
   var flexRows []*stickers.FlexBoxRow
@@ -77,22 +80,26 @@ func New(config *lib.Cfg, modules *[]*lib.Module) Model {
 
 type pingMsg struct{}
 
-func (m Model) ping() tea.Msg {
-  for {
-    m.pingChan <- struct{}{}
-    time.Sleep(time.Second)
+func (m Model) ping() tea.Cmd {
+  return func() tea.Msg {
+    for {
+      m.pingChan <- struct{}{}
+      time.Sleep(time.Second)
+    }
   }
 }
 
-func (m Model) pong() tea.Msg {
-  return pingMsg(<-m.pingChan)
+func (m Model) pong() tea.Cmd {
+  return func() tea.Msg {
+    return pingMsg(<-m.pingChan)
+  }
 }
 
 func (m Model) Init() tea.Cmd {
   return tea.Batch(
     tea.EnterAltScreen,
-    m.ping,
-    m.pong,
+    m.ping(),
+    m.pong(),
   )
 }
 
@@ -132,14 +139,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
       }
 
       nextUpdate := m.moduleUpdates[i].Add(refreshInterval)
-      if now.After(nextUpdate) {
+
+      if now.Unix() >= nextUpdate.Unix() {
         m.moduleUpdates[i] = now
 
-        v, cmd := (*(*m.modules)[i]).Update(lib.ModuleResizeEvent{})
+        v, cmd := (*(*m.modules)[i]).Update(msg)
         (*(*m.modules)[i]) = v
         cmds = append(cmds, cmd)
       }
     }
+    cmds = append(cmds, m.pong())
 
   }
 
