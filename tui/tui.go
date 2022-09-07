@@ -42,7 +42,7 @@ type Model struct {
   flexbox       *stickers.FlexBox
   screen        []int
   currentFocus  int
-  pingChan      chan struct{}
+  pingChan      chan lib.HeartbeatMsg
   log           *zap.SugaredLogger
 }
 
@@ -54,7 +54,7 @@ func New(config *lib.Cfg, modules *[]*lib.Module, log *zap.SugaredLogger) Model 
     flexbox:       stickers.NewFlexBox(0, 0),
     screen:        []int{0, 0},
     currentFocus:  -1,
-    pingChan:      make(chan struct{}),
+    pingChan:      make(chan lib.HeartbeatMsg),
     log:           log,
   }
 
@@ -78,12 +78,12 @@ func New(config *lib.Cfg, modules *[]*lib.Module, log *zap.SugaredLogger) Model 
   return m
 }
 
-type pingMsg struct{}
-
 func (m Model) ping() tea.Cmd {
   return func() tea.Msg {
     for {
-      m.pingChan <- struct{}{}
+      m.pingChan <- lib.HeartbeatMsg{
+        Now: time.Now(),
+      }
       time.Sleep(time.Second)
     }
   }
@@ -91,7 +91,7 @@ func (m Model) ping() tea.Cmd {
 
 func (m Model) pong() tea.Cmd {
   return func() tea.Msg {
-    return pingMsg(<-m.pingChan)
+    return lib.HeartbeatMsg(<-m.pingChan)
   }
 }
 
@@ -126,11 +126,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
       cmds = append(cmds, cmd)
     }
 
-  case pingMsg:
-    now := time.Now()
+  case lib.HeartbeatMsg:
     for i := 0; i < len(*m.modules); i++ {
       if len(m.moduleUpdates) <= i {
-        m.moduleUpdates = append(m.moduleUpdates, time.Now())
+        m.moduleUpdates = append(m.moduleUpdates, msg.Now)
       }
 
       refreshInterval, err := time.ParseDuration(m.config.Modules[i].RefreshInterval)
@@ -140,8 +139,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
       nextUpdate := m.moduleUpdates[i].Add(refreshInterval)
 
-      if now.Unix() >= nextUpdate.Unix() {
-        m.moduleUpdates[i] = now
+      if msg.IsDueNow(nextUpdate) {
+        m.moduleUpdates[i] = msg.Now
 
         v, cmd := (*(*m.modules)[i]).Update(msg)
         (*(*m.modules)[i]) = v

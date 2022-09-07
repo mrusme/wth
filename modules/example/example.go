@@ -36,7 +36,7 @@ func NewModule(ctx *lib.Ctx) (lib.Module, error) {
   module := new(Module)
   module.ctx = ctx
 
-  module.viewportStyle = lib.DefaultModuleViewStyle(ctx)
+  module.viewportStyle = lib.DefaultModuleViewStyle(ctx.Theme())
 
   return module, nil
 }

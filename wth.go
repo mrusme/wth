@@ -64,6 +64,7 @@ func main() {
     ctx, err := lib.NewCtx(
       &config,
       cfgModule.ID,
+      rt.Log,
     )
     if err != nil {
       panic(err)
