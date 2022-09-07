@@ -3,6 +3,7 @@ package tui
 import (
 	"errors"
 	"fmt"
+  "time"
 
 	"github.com/76creates/stickers"
 	"github.com/charmbracelet/bubbles/key"
@@ -36,9 +37,11 @@ type Model struct {
   keymap        KeyMap
   config        *lib.Cfg
   modules       *[]*lib.Module
+  moduleUpdates []time.Time
   flexbox       *stickers.FlexBox
   screen        []int
   currentFocus  int
+  pingChan      chan struct{}
 }
 
 func New(config *lib.Cfg, modules *[]*lib.Module) Model {
@@ -49,6 +52,7 @@ func New(config *lib.Cfg, modules *[]*lib.Module) Model {
     flexbox:       stickers.NewFlexBox(0, 0),
     screen:        []int{0, 0},
     currentFocus:  -1,
+    pingChan:      make(chan struct{}),
   }
 
   var flexRows []*stickers.FlexBoxRow
@@ -71,8 +75,25 @@ func New(config *lib.Cfg, modules *[]*lib.Module) Model {
   return m
 }
 
+type pingMsg struct{}
+
+func (m Model) ping() tea.Msg {
+  for {
+    m.pingChan <- struct{}{}
+    time.Sleep(time.Second)
+  }
+}
+
+func (m Model) pong() tea.Msg {
+  return pingMsg(<-m.pingChan)
+}
+
 func (m Model) Init() tea.Cmd {
-  return tea.Batch(tea.EnterAltScreen)
+  return tea.Batch(
+    tea.EnterAltScreen,
+    m.ping,
+    m.pong,
+  )
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -97,13 +118,38 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
       (*(*m.modules)[i]) = v
       cmds = append(cmds, cmd)
     }
+
+  case pingMsg:
+    now := time.Now()
+    for i := 0; i < len(*m.modules); i++ {
+      if len(m.moduleUpdates) <= i {
+        m.moduleUpdates = append(m.moduleUpdates, time.Now())
+      }
+
+      refreshInterval, err := time.ParseDuration(m.config.Modules[i].RefreshInterval)
+      if err != nil {
+        continue
+      }
+
+      nextUpdate := m.moduleUpdates[i].Add(refreshInterval)
+      if now.After(nextUpdate) {
+        m.moduleUpdates[i] = now
+
+        v, cmd := (*(*m.modules)[i]).Update(lib.ModuleResizeEvent{})
+        (*(*m.modules)[i]) = v
+        cmds = append(cmds, cmd)
+      }
+    }
+
   }
 
+  /*
   for i := 0; i < len(*m.modules); i++ {
     v, cmd := (*(*m.modules)[i]).Update(msg)
     (*(*m.modules)[i]) = v
     cmds = append(cmds, cmd)
   }
+  */
 
   return m, tea.Batch(cmds...)
 }

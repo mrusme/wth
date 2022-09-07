@@ -1,6 +1,8 @@
 package main
 
 import (
+  "fmt"
+  "time"
   lib "github.com/mrusme/libwth"
 
   "github.com/charmbracelet/bubbles/key"
@@ -64,7 +66,10 @@ func (m Module) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
   var cmd tea.Cmd
 
-  m.viewport.SetContent("Hello World!")
+  m.viewport.SetContent(fmt.Sprintf(
+      "Hello World! It's %s.",
+      time.Now().Format("15:04:05"),
+  ))
   m.viewport, cmd = m.viewport.Update(msg)
 
   cmds = append(cmds, cmd)

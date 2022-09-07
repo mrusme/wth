@@ -45,8 +45,8 @@ func main() {
     rt.Modules = append(rt.Modules, &module)
   }
 
-  tui := tea.NewProgram(tui.New(&rt.Config, &rt.Modules), tea.WithAltScreen())
-  err = tui.Start()
+  t := tea.NewProgram(tui.New(&rt.Config, &rt.Modules), tea.WithAltScreen())
+  err = t.Start()
   if err != nil {
     panic(err)
   }

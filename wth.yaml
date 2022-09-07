@@ -10,7 +10,7 @@ modules:
       left: 0
       height: 1
       width: 2
-    refreshInterval: "10s"
+    refreshInterval: "1s"
 
 layout:
   rows:
