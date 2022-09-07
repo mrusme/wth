@@ -23,7 +23,7 @@ func main() {
   rt.Config = config
 
   for _, cfgModule := range config.Modules {
-    ctx, err := lib.NewCtx(&config, cfgModule.Path)
+    ctx, err := lib.NewCtx(&config, cfgModule.ID)
     if err != nil {
       panic(err)
     }

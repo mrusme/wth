@@ -23,25 +23,18 @@ var DefaultKeyMap = KeyMap{
   ),
 }
 
-var viewportStyle = lipgloss.NewStyle().
-    Margin(0, 0, 0, 0).
-    Padding(1, 1).
-    Border(lipgloss.RoundedBorder()).
-    BorderForeground(lipgloss.Color("#874BFD")).
-    BorderTop(true).
-    BorderLeft(true).
-    BorderRight(true).
-    BorderBottom(true)
-
 type Module struct {
   keymap          KeyMap
   ctx             *lib.Ctx
   viewport        viewport.Model
+  viewportStyle   lipgloss.Style
 }
 
 func NewModule(ctx *lib.Ctx) (lib.Module, error) {
   module := new(Module)
   module.ctx = ctx
+
+  module.viewportStyle = lib.DefaultModuleViewStyle(ctx)
 
   return module, nil
 }
@@ -61,8 +54,8 @@ func (m Module) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     }
 
   case lib.ModuleResizeEvent:
-    viewportStyle.Width(msg.Width - 4)
-    viewportStyle.Height(msg.Height - 4)
+    m.viewportStyle.Width(msg.Width - 4)
+    m.viewportStyle.Height(msg.Height - 4)
     m.viewport = viewport.New(msg.Width - 4, msg.Height - 4)
     m.viewport.Width =  msg.Width - 4
     m.viewport.Height = msg.Height - 4
@@ -79,7 +72,7 @@ func (m Module) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Module) View() (string) {
-  return viewportStyle.Render(m.viewport.View())
+  return m.viewportStyle.Render(m.viewport.View())
 }
 
 func (m *Module) refresh() (tea.Cmd) {

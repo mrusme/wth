@@ -6,7 +6,7 @@ require (
 	github.com/76creates/stickers v0.0.0-20220613133526-beb5a915bb0e
 	github.com/charmbracelet/bubbles v0.14.0
 	github.com/charmbracelet/bubbletea v0.22.1
-	github.com/mrusme/libwth v0.0.3
+	github.com/mrusme/libwth v0.0.4
 )
 
 require (
@@ -27,6 +27,7 @@ require (
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.5 // indirect
 	github.com/rivo/uniseg v0.3.4 // indirect
+	github.com/ryankurte/go-structparse v1.2.0 // indirect
 	github.com/spf13/afero v1.9.2 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
