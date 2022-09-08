@@ -1,4 +1,4 @@
-module github.com/mrusme/wth/modules/example
+module github.com/mrusme/wth/modules/worldclocks
 
 go 1.19
 

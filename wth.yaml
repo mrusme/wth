@@ -5,11 +5,13 @@ modules:
     enabled: true
     config:
       output: "Hello World"
-    position:
-      top: 0
-      left: 0
-      height: 1
-      width: 2
+    refreshInterval: "1s"
+  - id: "worldclocks01"
+    name: "World Clock"
+    path: "./modules/worldclocks/worldclocks.so"
+    enabled: true
+    config:
+      timezones: "Pacific/Honolulu;America/Panama;America/New_York;Etc/UTC;Europe/Berlin;Asia/Bangkok;Asia/Tokyo;Australia/Melbourne;Pacific/Auckland"
     refreshInterval: "1s"
 
 layout:
@@ -31,7 +33,7 @@ layout:
     # Second row
     - cells:
       # First cell (from left to right)
-      - moduleId: "example01"
+      - moduleId: "worldclocks01"
         ratioX: 4
         ratioY: 3
       # Second cell
@@ -42,4 +44,8 @@ layout:
       - moduleId: "-"
         ratioX: 4
         ratioY: 3
+
+log:
+  file: "wth.log"
+  level: "debug"
 

@@ -20,7 +20,10 @@ type Runtime struct {
   Log                    *zap.SugaredLogger
 }
 
-func NewLogger(filename string) (*zap.Logger, error) {
+func NewLogger(
+  filename string,
+  level string,
+) (*zap.Logger, error) {
   if runtime.GOOS == "windows" {
     zap.RegisterSink("winfile", func(u *url.URL) (zap.Sink, error) {
       return os.OpenFile(u.Path[1:], os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
@@ -39,6 +42,10 @@ func NewLogger(filename string) (*zap.Logger, error) {
     }
   }
 
+  lvl := zap.NewAtomicLevel()
+  lvl.UnmarshalText([]byte(level))
+  cfg.Level = lvl
+
   return cfg.Build()
 }
 
@@ -52,7 +59,10 @@ func main() {
   }
   rt.Config = config
 
-  logger, err := NewLogger("wth.log")
+  logger, err := NewLogger(
+    rt.Config.Log.File,
+    rt.Config.Log.Level,
+  )
   if err != nil {
     panic(err)
   }
