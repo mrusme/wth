@@ -67,10 +67,17 @@ func (m Module) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
   var cmd tea.Cmd
 
-  m.viewport.SetContent(fmt.Sprintf(
-      "Hello World! It's %s.",
-      time.Now().Format("15:04:05"),
-  ))
+  text := fmt.Sprintf(
+    "%s\nIt's %s.",
+    m.ctx.ConfigValue("output"),
+    time.Now().Format("15:04:05"),
+  )
+
+  button := m.ctx.Theme().DefaultButtonStyle()
+
+  out := lipgloss.JoinVertical(lipgloss.Left, text, button.Render("Nice"))
+
+  m.viewport.SetContent(out)
   m.viewport, cmd = m.viewport.Update(msg)
 
   cmds = append(cmds, cmd)
