@@ -1,16 +1,17 @@
 package main
 
 import (
-	"fmt"
-	"strings"
-	"time"
+  "fmt"
+  "strings"
+  "time"
 
-	lib "github.com/mrusme/libwth"
+  lib "github.com/mrusme/libwth"
+  "github.com/mrusme/libwth/module"
 
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/viewport"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+  "github.com/charmbracelet/bubbles/key"
+  "github.com/charmbracelet/bubbles/viewport"
+  tea "github.com/charmbracelet/bubbletea"
+  "github.com/charmbracelet/lipgloss"
 )
 
 type KeyMap struct {
@@ -41,7 +42,7 @@ type Module struct {
 
 }
 
-func NewModule(ctx *lib.Ctx) (lib.Module, error) {
+func NewModule(ctx *lib.Ctx) (module.Module, error) {
   module := new(Module)
   module.ctx = ctx
 
@@ -54,18 +55,15 @@ func NewModule(ctx *lib.Ctx) (lib.Module, error) {
     }
     module.locations = append(module.locations, loc)
   }
-  module.locationStyle = lipgloss.NewStyle().
-    Foreground(lipgloss.Color(module.ctx.Theme().Defaults.Label.TextColor))
+  module.locationStyle = ctx.Theme().DefaultLabelStyle()
 
   module.timeformat = "15:04:05"
   if module.ctx.Module.RefreshInterval != "1s" {
     module.timeformat = "15:04"
   }
 
-  module.dateStyle = lipgloss.NewStyle().
-    Foreground(lipgloss.Color(module.ctx.Theme().Colors.Muted))
-
-  module.viewportStyle = lib.DefaultModuleViewStyle(ctx.Theme())
+  module.dateStyle = ctx.Theme().DefaultTextMutedStyle()
+  module.viewportStyle = ctx.Theme().DefaultModuleViewStyle()
 
   return module, nil
 }
@@ -84,7 +82,7 @@ func (m Module) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
       cmds = append(cmds, m.refresh())
     }
 
-  case lib.ModuleResizeEvent:
+  case module.ModuleResizeEvent:
     m.viewportStyle.Width(msg.Width - 4)
     m.viewportStyle.Height(msg.Height - 4)
     m.viewport = viewport.New(msg.Width - 4, msg.Height - 4)

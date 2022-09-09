@@ -4,6 +4,7 @@ import (
   "fmt"
   "time"
   lib "github.com/mrusme/libwth"
+  "github.com/mrusme/libwth/module"
 
   "github.com/charmbracelet/bubbles/key"
   "github.com/charmbracelet/bubbles/viewport"
@@ -32,11 +33,11 @@ type Module struct {
   viewportStyle   lipgloss.Style
 }
 
-func NewModule(ctx *lib.Ctx) (lib.Module, error) {
+func NewModule(ctx *lib.Ctx) (module.Module, error) {
   module := new(Module)
   module.ctx = ctx
 
-  module.viewportStyle = lib.DefaultModuleViewStyle(ctx.Theme())
+  module.viewportStyle = ctx.Theme().DefaultModuleViewStyle()
 
   return module, nil
 }
@@ -55,7 +56,7 @@ func (m Module) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
       cmds = append(cmds, m.refresh())
     }
 
-  case lib.ModuleResizeEvent:
+  case module.ModuleResizeEvent:
     m.viewportStyle.Width(msg.Width - 4)
     m.viewportStyle.Height(msg.Height - 4)
     m.viewport = viewport.New(msg.Width - 4, msg.Height - 4)

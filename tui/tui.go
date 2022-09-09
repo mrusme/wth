@@ -1,15 +1,17 @@
 package tui
 
 import (
-	"errors"
-	"fmt"
-	"time"
+  "errors"
+  "fmt"
+  "time"
 
-	"github.com/76creates/stickers"
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
-	lib "github.com/mrusme/libwth"
-	"go.uber.org/zap"
+  "github.com/76creates/stickers"
+  "github.com/charmbracelet/bubbles/key"
+  tea "github.com/charmbracelet/bubbletea"
+  // lib "github.com/mrusme/libwth"
+  "github.com/mrusme/libwth/cfg"
+  "github.com/mrusme/libwth/module"
+  "go.uber.org/zap"
 )
 
 type KeyMap struct {
@@ -36,17 +38,17 @@ var DefaultKeyMap = KeyMap{
 
 type Model struct {
   keymap        KeyMap
-  config        *lib.Cfg
-  modules       *[]*lib.Module
+  config        *cfg.Cfg
+  modules       *[]*module.Module
   moduleUpdates []time.Time
   flexbox       *stickers.FlexBox
   screen        []int
   currentFocus  int
-  pingChan      chan lib.HeartbeatMsg
+  pingChan      chan module.HeartbeatMsg
   log           *zap.SugaredLogger
 }
 
-func New(config *lib.Cfg, modules *[]*lib.Module, log *zap.SugaredLogger) Model {
+func New(config *cfg.Cfg, modules *[]*module.Module, log *zap.SugaredLogger) Model {
   m := Model{
     keymap:        DefaultKeyMap,
     config:        config,
@@ -54,7 +56,7 @@ func New(config *lib.Cfg, modules *[]*lib.Module, log *zap.SugaredLogger) Model 
     flexbox:       stickers.NewFlexBox(0, 0),
     screen:        []int{0, 0},
     currentFocus:  -1,
-    pingChan:      make(chan lib.HeartbeatMsg),
+    pingChan:      make(chan module.HeartbeatMsg),
     log:           log,
   }
 
@@ -81,7 +83,7 @@ func New(config *lib.Cfg, modules *[]*lib.Module, log *zap.SugaredLogger) Model 
 func (m Model) ping() tea.Cmd {
   return func() tea.Msg {
     for {
-      m.pingChan <- lib.HeartbeatMsg{
+      m.pingChan <- module.HeartbeatMsg{
         Now: time.Now(),
       }
       time.Sleep(time.Second)
@@ -91,7 +93,7 @@ func (m Model) ping() tea.Cmd {
 
 func (m Model) pong() tea.Cmd {
   return func() tea.Msg {
-    return lib.HeartbeatMsg(<-m.pingChan)
+    return module.HeartbeatMsg(<-m.pingChan)
   }
 }
 
@@ -117,7 +119,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     m.setSizes(msg.Width, msg.Height)
     for i := range *m.modules {
       cell := m.getCellByModuleID(m.config.Modules[i].ID)
-      _msg := lib.ModuleResizeEvent{
+      _msg := module.ModuleResizeEvent{
         Width: cell.GetWidth(),
         Height: cell.GetHeight(),
       }
@@ -126,7 +128,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
       cmds = append(cmds, cmd)
     }
 
-  case lib.HeartbeatMsg:
+  case module.HeartbeatMsg:
     for i := 0; i < len(*m.modules); i++ {
       if len(m.moduleUpdates) <= i {
         m.moduleUpdates = append(m.moduleUpdates, msg.Now)
@@ -163,7 +165,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() (string) {
-	m.flexbox.ForceRecalculate()
+  m.flexbox.ForceRecalculate()
 
   for rowIdx, row := range m.config.Layout.Rows {
     for cellIdx, cell := range row.Cells {

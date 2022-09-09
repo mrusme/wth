@@ -6,7 +6,9 @@ import (
   "net/url"
   "os"
 
-	lib "github.com/mrusme/libwth"
+  lib "github.com/mrusme/libwth"
+  "github.com/mrusme/libwth/module"
+  "github.com/mrusme/libwth/cfg"
   "github.com/mrusme/wth/tui"
   tea "github.com/charmbracelet/bubbletea"
 
@@ -14,8 +16,8 @@ import (
 )
 
 type Runtime struct {
-  Config                 lib.Cfg
-  Modules                []*lib.Module
+  Config                 cfg.Cfg
+  Modules                []*module.Module
   Logger                 *zap.Logger
   Log                    *zap.SugaredLogger
 }
@@ -53,7 +55,7 @@ func NewLogger(
 func main() {
   rt := new(Runtime)
 
-  config, err := lib.NewCfg()
+  config, err := cfg.NewCfg()
   if err != nil {
     panic(err)
   }
@@ -90,7 +92,7 @@ func main() {
       panic(err)
     }
 
-    module, err := symNewModule.(func(*lib.Ctx) (lib.Module, error))(ctx)
+    module, err := symNewModule.(func(*lib.Ctx) (module.Module, error))(ctx)
     if err != nil {
       panic(err)
     }
