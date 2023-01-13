@@ -38,8 +38,8 @@ func NewModule(ctx *lib.Ctx) (module.Module, error) {
 	if command == "" {
 		command = "echo No command specified"
 	}
-	module.command = strings.SplitN(command, " ", 2)
-	module.cmd = exec.Command(module.command[0], module.command[1])
+	module.command = strings.Split(command, " ")
+	module.cmd = exec.Command(module.command[0], module.command[1:]...)
 
 	module.viewportStyle = ctx.Theme().DefaultModuleViewStyle()
 
@@ -76,17 +76,20 @@ func (m Module) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var content string = ""
 	out, err := m.cmd.Output()
 	if err != nil {
-		content = err.Error()
+		content = fmt.Sprintf("%s %s:\n%s\n", m.command[0], m.command[1], err.Error())
 	} else {
 		content = string(out)
 	}
 
 	contentLines := strings.Split(content, "\n")
-	for i := 0; i < m.height; i++ {
-		contentLines[i] = exstrings.SubString(contentLines[i], 0, m.width-6)
+	startIdx := 0
+	endIdx := len(contentLines) - 1
+	if endIdx > m.height {
+		startIdx = endIdx - m.height + 4
 	}
-	if len(contentLines) > m.height {
-		content = strings.Join(contentLines[0:m.height], "\n")
+	content = ""
+	for i := startIdx; i <= endIdx; i++ {
+		content += exstrings.SubString(contentLines[i], 0, m.width-6) + "\n"
 	}
 
 	m.viewport.SetContent(content)
