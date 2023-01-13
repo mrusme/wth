@@ -22,7 +22,15 @@ modules:
     path: "./modules/command/command.so"
     enabled: true
     config:
-      command: "ps aux"
+      command: "/bin/ps a -o pid,comm"
+    refreshInterval: "60s"
+
+  - id: "command02"
+    name: "Command"
+    path: "./modules/command/command.so"
+    enabled: true
+    config:
+      command: "dmesg -t"
     refreshInterval: "60s"
 
 layout:
@@ -52,7 +60,7 @@ layout:
         ratioX: 4
         ratioY: 3
       # Third cell
-      - moduleId: "-"
+      - moduleId: "command02"
         ratioX: 4
         ratioY: 3
 
