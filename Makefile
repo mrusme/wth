@@ -1,11 +1,11 @@
-.PHONY: all build modules
+MODULES := $(wildcard modules/*/.)
+.PHONY: all build $(MODULES)
 
-all: build modules
+all: build $(MODULES)
 
 build:
 	go build .
 
-modules:
-	@make -C modules/example
-	@make -C modules/worldclocks
+$(MODULES):
+	$(MAKE) -C $@
 
