@@ -21,8 +21,8 @@ example module can be found
 WTH also offers a [command 
 module](https://github.com/mrusme/wth/tree/master/modules/command) that allows 
 running arbitrary commands and displaying their output as WTH widget on the 
-dashboard. Paired with [https://github.com/charmbracelet/gum] it's possible to 
-develop WTH widgets as plain shell scripts.
+dashboard. Paired with [Gum](https://github.com/charmbracelet/gum) it's possible 
+to develop WTH widgets as plain shell scripts.
 
 More native modules are going to become available over time. Also the `command` 
 module will soon gain the ability to read especially formatted command output 
