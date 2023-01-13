@@ -8,8 +8,8 @@ modules:
       output: "Hello World"
     refreshInterval: "1s"
 
-  - id: "worldclocks01"
-    name: "World Clock"
+  - id: "worldclocks"
+    name: "World Clocks"
     path: "./modules/worldclocks/worldclocks.so"
     enabled: true
     config:
@@ -17,7 +17,23 @@ modules:
       timeformat: "15"
     refreshInterval: "60s"
 
-  - id: "command01"
+  - id: "ratesx-xmr"
+    name: "rate.sx: XMR"
+    path: "./modules/command/command.so"
+    enabled: true
+    config:
+      command: "curl -s rate.sx/xmr"
+    refreshInterval: "60s"
+
+  - id: "ratesx-btc"
+    name: "rate.sx: BTC"
+    path: "./modules/command/command.so"
+    enabled: true
+    config:
+      command: "curl -s rate.sx/btc"
+    refreshInterval: "60s"
+
+  - id: "psa"
     name: "Command"
     path: "./modules/command/command.so"
     enabled: true
@@ -25,7 +41,7 @@ modules:
       command: "/bin/ps a -o pid,comm"
     refreshInterval: "60s"
 
-  - id: "command02"
+  - id: "dmesg"
     name: "Command"
     path: "./modules/command/command.so"
     enabled: true
@@ -33,12 +49,12 @@ modules:
       command: "dmesg -t"
     refreshInterval: "60s"
 
-  - id: "command03"
+  - id: "chafa"
     name: "Command"
     path: "./modules/command/command.so"
     enabled: true
     config:
-      command: ""
+      command: "task minimal tag:tools"
     refreshInterval: "60s"
 
 layout:
@@ -46,29 +62,29 @@ layout:
     # First row
     - cells:
       # First cell (from left to right)
-      - moduleId: "-"
+      - moduleId: "worldclocks"
         ratioX: 4
         ratioY: 3
       # Second cell
-      - moduleId: "example01"
+      - moduleId: "ratesx-xmr"
         ratioX: 4
         ratioY: 3
       # Third cell
-      - moduleId: "command03"
+      - moduleId: "ratesx-btc"
         ratioX: 4
         ratioY: 3
     # Second row
     - cells:
       # First cell (from left to right)
-      - moduleId: "worldclocks01"
+      - moduleId: "psa"
         ratioX: 4
         ratioY: 3
       # Second cell
-      - moduleId: "command01"
+      - moduleId: "dmesg"
         ratioX: 4
         ratioY: 3
       # Third cell
-      - moduleId: "command02"
+      - moduleId: "chafa"
         ratioX: 4
         ratioY: 3
 
