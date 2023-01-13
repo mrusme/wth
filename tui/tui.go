@@ -127,17 +127,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		for i := range *m.modules {
 			id := m.config.Modules[i].ID
 			cell := m.getCellByModuleID(id)
-			m.meta[id] = ModuleMeta{
-				Width:  cell.GetWidth(),
-				Height: cell.GetHeight(),
+			if cell != nil {
+				m.meta[id] = ModuleMeta{
+					Width:  cell.GetWidth(),
+					Height: cell.GetHeight(),
+				}
+				_msg := module.ModuleResizeEvent{
+					Width:  cell.GetWidth(),
+					Height: cell.GetHeight(),
+				}
+				v, cmd := (*(*m.modules)[i]).Update(_msg)
+				(*(*m.modules)[i]) = v
+				cmds = append(cmds, cmd)
 			}
-			_msg := module.ModuleResizeEvent{
-				Width:  cell.GetWidth(),
-				Height: cell.GetHeight(),
-			}
-			v, cmd := (*(*m.modules)[i]).Update(_msg)
-			(*(*m.modules)[i]) = v
-			cmds = append(cmds, cmd)
 		}
 
 	case module.HeartbeatMsg:
