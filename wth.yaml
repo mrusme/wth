@@ -14,6 +14,15 @@ modules:
     enabled: true
     config:
       timezones: "Pacific/Honolulu;America/Panama;America/New_York;Etc/UTC;Europe/Berlin;Asia/Bangkok;Asia/Tokyo;Australia/Melbourne;Pacific/Auckland"
+      timeformat: "15"
+    refreshInterval: "60s"
+
+  - id: "command01"
+    name: "Command"
+    path: "./modules/command/command.so"
+    enabled: true
+    config:
+      command: "ps aux"
     refreshInterval: "60s"
 
 layout:
@@ -39,7 +48,7 @@ layout:
         ratioX: 4
         ratioY: 3
       # Second cell
-      - moduleId: "-"
+      - moduleId: "command01"
         ratioX: 4
         ratioY: 3
       # Third cell
