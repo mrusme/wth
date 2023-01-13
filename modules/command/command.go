@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mattn/go-shellwords"
 	lib "github.com/mrusme/libwth"
 	"github.com/mrusme/libwth/module"
 	"github.com/thinkeridea/go-extend/exstrings"
@@ -25,6 +26,7 @@ type Module struct {
 	locationStyle lipgloss.Style
 
 	command []string
+	envs    []string
 	cmd     *exec.Cmd
 	width   int
 	height  int
@@ -36,9 +38,15 @@ func NewModule(ctx *lib.Ctx) (module.Module, error) {
 
 	command := module.ctx.ConfigValue("command")
 	if command == "" {
-		command = "echo No command specified"
+		command = "echo \"No command specified\""
 	}
-	module.command = strings.Split(command, " ")
+
+	var err error
+	module.envs, module.command, err = shellwords.ParseWithEnvs(command)
+	if err != nil {
+		return nil, err
+	}
+
 	module.cmd = exec.Command(module.command[0], module.command[1:]...)
 
 	module.viewportStyle = ctx.Theme().DefaultModuleViewStyle()
@@ -68,6 +76,7 @@ func (m Module) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			fmt.Sprintf("COLUMNS=%d", msg.Width-4),
 			fmt.Sprintf("HEIGHT=%d", msg.Height-4),
 		)
+		m.cmd.Env = append(m.cmd.Env, m.envs...)
 
 	}
 
@@ -76,7 +85,7 @@ func (m Module) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var content string = ""
 	out, err := m.cmd.Output()
 	if err != nil {
-		content = fmt.Sprintf("%s %s:\n%s\n", m.command[0], m.command[1], err.Error())
+		content = fmt.Sprintf("%s %v:\n%s\n", m.command[0], m.command, err.Error())
 	} else {
 		content = string(out)
 	}
