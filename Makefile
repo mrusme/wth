@@ -1,11 +1,16 @@
 MODULES := $(wildcard modules/*/.)
-.PHONY: all build $(MODULES)
+.PHONY: all get build $(MODULES)
 
 all: build $(MODULES)
+
+deps: get $(MODULES)
+
+get:
+	go get
 
 build:
 	go build .
 
 $(MODULES):
-	$(MAKE) -C $@
+	$(MAKE) -C $@ $(MAKECMDGOALS)
 

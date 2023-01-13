@@ -6,7 +6,7 @@ require (
 	github.com/76creates/stickers v0.0.0-20221228130522-99e8eca7151c
 	github.com/charmbracelet/bubbles v0.14.0
 	github.com/charmbracelet/bubbletea v0.23.1
-	github.com/mrusme/libwth v0.0.8
+	github.com/mrusme/libwth v0.1.0
 	go.uber.org/zap v1.24.0
 )
 
