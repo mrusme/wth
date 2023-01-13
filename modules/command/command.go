@@ -35,6 +35,7 @@ type Module struct {
 func NewModule(ctx *lib.Ctx) (module.Module, error) {
 	module := new(Module)
 	module.ctx = ctx
+	module.envs = os.Environ()
 
 	command := module.ctx.ConfigValue("command")
 	if command == "" {
@@ -42,12 +43,12 @@ func NewModule(ctx *lib.Ctx) (module.Module, error) {
 	}
 
 	var err error
-	module.envs, module.command, err = shellwords.ParseWithEnvs(command)
+	var envs []string
+	envs, module.command, err = shellwords.ParseWithEnvs(command)
 	if err != nil {
 		return nil, err
 	}
-
-	module.cmd = exec.Command(module.command[0], module.command[1:]...)
+	module.envs = append(module.envs, envs...)
 
 	module.viewportStyle = ctx.Theme().DefaultModuleViewStyle()
 
@@ -71,18 +72,18 @@ func (m Module) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewport = viewport.New(msg.Width-4, msg.Height-4)
 		m.viewport.Width = msg.Width - 4
 		m.viewport.Height = msg.Height - 4
-		m.cmd.Env = append(
-			os.Environ(),
-			fmt.Sprintf("COLUMNS=%d", msg.Width-4),
-			fmt.Sprintf("HEIGHT=%d", msg.Height-4),
-		)
-		m.cmd.Env = append(m.cmd.Env, m.envs...)
 
 	}
 
 	var cmd tea.Cmd
 
 	var content string = ""
+	m.cmd = exec.Command(m.command[0], m.command[1:]...)
+	m.cmd.Env = m.envs
+	m.cmd.Env = append(m.cmd.Env,
+		fmt.Sprintf("COLUMNS=%d", m.width-4),
+		fmt.Sprintf("HEIGHT=%d", m.height-4),
+	)
 	out, err := m.cmd.Output()
 	if err != nil {
 		content = fmt.Sprintf("%s %v:\n%s\n", m.command[0], m.command, err.Error())
