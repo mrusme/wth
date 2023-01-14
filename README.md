@@ -8,9 +8,9 @@ your terminal, providing at-a-glance access to stats and data. It's a modular
 and extensible alternative to [WTF](https://github.com/wtfutil/wtf) and it's 
 based on [Bubble Tea](https://github.com/charmbracelet/bubbletea).
 
-WTH uses [stickers](github.com/76creates/stickers) to render the dashboard, 
-meaning it's *fully responsive* to size changes and automatically adjusts widget 
-proportions.
+WTH uses [stickers](https://github.com/76creates/stickers) to render the 
+dashboard, meaning it's *fully responsive* to size changes and automatically 
+adjusts widget proportions.
 
 Unlike WTF, WTH modules are **actual** modules (read: shared objects), meaning 
 everyone can extend WTH without the need to change the code in this repository. 
